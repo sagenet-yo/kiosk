@@ -3,12 +3,12 @@ CREATE TABLE IF NOT EXISTS public.person (
 	id SERIAL NOT NULL,
 	"name" varchar(64) NULL,
 	age int4 NULL,
-	gender int4 NULL,
+	gender varchar NULL,
 	CONSTRAINT person_age_check CHECK ((age >= 0)),
-	CONSTRAINT person_gender_check CHECK (((gender = 1) OR (gender = 0))),
+	CONSTRAINT person_gender_check CHECK (((gender = 'M') OR (gender = 'F'))),
 	CONSTRAINT person_pkey PRIMARY KEY (id)
 );
-
++
 
 -- A table with primary key generated via a sequence
 CREATE TABLE IF NOT EXISTS  public.vehicle (
@@ -34,14 +34,14 @@ $function$
 
 -- A trigger
 CREATE OR REPLACE TRIGGER before_insert_vehicle BEFORE
-INSERT ON public.vehicle for each row execute function set_vehicle_id()
+INSERT ON public.vehicle for each row execute function public.set_vehicle_id()
 ;
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- now do only serial ids here onewards
 CREATE TABLE address
 (
-	id SERIAL PRIMARY KEY,
-	line1 VARCHAR,
+	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 	street VARCHAR,
 	zip INT,
 	state VARCHAR,
@@ -53,8 +53,21 @@ CREATE TABLE address
 CREATE TABLE address_person_association
 ( 
 	id SERIAL PRIMARY KEY,
-	FOREIGN KEY (person_id) REFERENCES person(id)
+	person_id INT NOT NULL,
+    address_id UUID NOT NULL,
+	FOREIGN KEY (person_id) REFERENCES person(id),
 	FOREIGN KEY (address_id) REFERENCES address(id)
 )
 ;
+drop table address_person_association 
+-- public.person_id_seq definition
 
+-- DROP SEQUENCE public.person_id_seq;
+
+CREATE SEQUENCE public.vehicle__id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 2147483647
+	START 1
+	CACHE 1
+	NO CYCLE;
