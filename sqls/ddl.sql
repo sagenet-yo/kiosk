@@ -37,16 +37,6 @@ CREATE OR REPLACE TRIGGER before_insert_vehicle BEFORE
 INSERT ON public.vehicle for each row execute function set_vehicle_id()
 ;
 
-
--- 1-m
--- A table with auto-generated uuids as primary key
-CREATE TABLE employee_vehicle
- - id
- - vehicle_id
- - employee_id
- - tag
-
-
 -- now do only serial ids here onewards
 CREATE TABLE address
 (
@@ -55,14 +45,16 @@ CREATE TABLE address
 	street VARCHAR,
 	zip INT,
 	state VARCHAR,
-	country VARCHAR DEFAULT 'US')
+	country VARCHAR DEFAULT 'US'
+)
+;
 
 - m-m relation
- CREATE TABLE address_person_association
- ( 
- 	id SERIAL PRIMARY KEY,
- 	FOREIGN KEY (person_id) REFERENCES person(id)
- 	FOREIGN KEY (address_id) REFERENCES address(id)
- )
-
+CREATE TABLE address_person_association
+( 
+	id SERIAL PRIMARY KEY,
+	FOREIGN KEY (person_id) REFERENCES person(id)
+	FOREIGN KEY (address_id) REFERENCES address(id)
+)
+;
 
