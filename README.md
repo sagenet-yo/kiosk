@@ -2,8 +2,11 @@
 
 ## git Commands
 `git add -A`
+
 `git status`
+
 `git commit -m "Example Message"`
+
 `git push`
 
 
