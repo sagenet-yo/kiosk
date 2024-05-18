@@ -26,9 +26,11 @@ public class DataLoader {
         log.info("Hello: {}{}", "Yo", "Han");
         final List<Person> people = getPeople();
 
-        try (final Connection con = DriverManager.getConnection(JDBC_CONNECTION_STRING, DB_USER_NAME, DB_PASSWORD)) {
+        try (final Connection connection = DriverManager.getConnection(JDBC_CONNECTION_STRING, DB_USER_NAME, DB_PASSWORD)) {
+            cleanup(connection);
+
             for (Person person : people) {
-                executeSqls(con, person);
+                executeSqls(connection, person);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -40,14 +42,26 @@ public class DataLoader {
                                     final Person person) {
         int personId = createPerson(connection, person);
 
-
         final UUID addressId = createAddress(connection, person.getAddress());
 
         createPersonAddressAssociation(connection, addressId, personId);
     }
+
+    private static void cleanup(final Connection connection) {
+        List.of("delete from address_person_association",
+                "delete from address",
+                "delete from person").forEach(sql -> {
+
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.execute();
+            } catch (final SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     private static void createPersonAddressAssociation(final Connection con, final UUID addressID,
-                                                       final int personID)
-    {
+                                                       final int personID) {
         final String sql = "insert into address_person_association (address_id, person_id) select ?, ?";
         try (PreparedStatement statement = con.prepareStatement(sql)) {
             statement.setObject(1, addressID);
@@ -56,8 +70,8 @@ public class DataLoader {
         } catch (final SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
+
     private static UUID createAddress(final Connection con,
                                       final Address address) {
         final String sql = "insert into address (street, city, state, zip) select ?, ?, ?, ? returning id";
