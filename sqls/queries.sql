@@ -13,3 +13,4 @@ select * from address_person_association
 select * from person
 select * from address 
 select * from vehicle
+
