@@ -9,6 +9,7 @@
 
 `git push`
 
+`~/idea/bin/idea.sh`
 
 ## Ran a postgres data base server 
 ```
