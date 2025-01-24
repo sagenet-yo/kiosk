@@ -1,6 +1,5 @@
 package com.example.kiosk.Dto
 
-import android.graphics.Bitmap
 import java.util.UUID
 
 
@@ -12,7 +11,10 @@ data class VisitorDto(
     val checkedIn: Boolean,
     val company: String,
     val phoneNumber: String,
-    val picture: ByteArray
+    val picture: String,
+    val personOfInterest: String,
+    val checkInTime : String,
+    val checkOutTime : String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -27,6 +29,9 @@ data class VisitorDto(
         if (checkedIn != other.checkedIn) return false
         if (company != other.company) return false
         if (phoneNumber != other.phoneNumber) return false
+        if (personOfInterest != other.personOfInterest) return false
+        if (checkInTime != other.checkInTime) return false
+        if (checkOutTime != other.checkOutTime) return false
         return picture.contentEquals(other.picture)
     }
 
@@ -38,7 +43,10 @@ data class VisitorDto(
         result = 31 * result + checkedIn.hashCode()
         result = 31 * result + company.hashCode()
         result = 31 * result + phoneNumber.hashCode()
-        result = 31 * result + picture.contentHashCode()
+        result = 31 * result + personOfInterest.hashCode()
+        result = 31 * result + picture.hashCode()
+        result = 31 * result + checkInTime.hashCode()
+        result = 31 * result + checkOutTime.hashCode()
         return result
     }
 }

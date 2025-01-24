@@ -50,6 +50,8 @@ android {
 }
 
 dependencies {
+
+    //Label
     //Icons
     implementation ("androidx.compose.material:material-icons-core:1.7.0")
     implementation ("androidx.compose.material:material-icons-extended:1.7.0")
@@ -65,6 +67,7 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.7.0") // Update to the latest stable version
     implementation ("androidx.compose.material:material:1.7.0")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.7.0")
+    implementation(files("C:\\Users\\jacoby\\Documents\\bpsdkaall491\\bpsdka491\\bpsdka491\\libs\\BrotherPrintLibrary.aar"))
     debugImplementation ("androidx.compose.ui:ui-tooling:1.7.0")
 
     // CameraX Core library

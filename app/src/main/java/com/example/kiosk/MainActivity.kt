@@ -1,31 +1,37 @@
 package com.example.kiosk
 
 import EmployeeListScreen
+import ThreeOptionDeliveryScreen
 import VisitorPhotoScreen
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.kiosk.Screens.CheckIn.CheckInEndScreen
 import com.example.kiosk.Screens.CheckIn.VisitorInfoScreen
+import com.example.kiosk.Screens.CheckOut.CheckOutEndScreen
+import com.example.kiosk.Screens.CheckOut.ListCheckedInScreen
 import com.example.kiosk.Screens.Delivery.DeliveryEndScreen
-import com.example.kiosk.Screens.Delivery.ThreeOptionDeliveryScreen
 import com.example.kiosk.Screens.HomeScreen
+import com.example.kiosk.Screens.SetupScreen
 import com.example.kiosk.Screens.ThreeOptionHomeScreen
 import com.example.kiosk.ui.theme.KioskTheme
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -35,13 +41,26 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Kiosk()
+
+                    val sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+                    val isFirstLaunch = sharedPreferences.getBoolean("isFirstLaunch", true)
+
+                    if (isFirstLaunch)
+                    {
+                        SetupScreen()
+                        sharedPreferences.edit().putBoolean("isFirstLaunch", false).apply()
+                    }
+                    else
+                    {
+                        Kiosk()
+                    }
                 }
             }
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Kiosk() {
     val navController = rememberNavController()
@@ -51,77 +70,116 @@ fun Kiosk() {
                 navController.navigate("threeOptionHomeScreen")
             }
         }
+
         composable("threeOptionHomeScreen") {
             ThreeOptionHomeScreen(
                 navigationBack = { navController.popBackStack() },
-                navigationToThreeOptionDeliveryScreen = { navController.navigate("threeOptionDeliveryScreen")},
-                navigationToEmployeeListScreen = { navController.navigate("employeeListScreen")}
+                navigationToThreeOptionDeliveryScreen = { navController.navigate("threeOptionDeliveryScreen") },
+                navigationToThreeOptionCheckOutScreen = { navController.navigate("listCheckedInScreen") },
+                navigationToEmployeeListScreen = { navController.navigate("employeeListScreen") }
             )
         }
         composable("employeeListScreen") {
             EmployeeListScreen(
                 navigationBack = { navController.popBackStack() },
-                navigationToVisitorInfoScreen = { navController.navigate("visitorInfoScreen")}
-            )
-        }
-        composable("visitorInfoScreen") {
-            VisitorInfoScreen(
-                navigationBack = { navController.popBackStack() },
-                navigationToVisitorPhotoScreen = { navController.navigate("visitorPhotoScreen/{firstName}/{lastName}/{email}/{company}/{phoneNumber}")}
+                navigationToVisitorInfoScreen = { personOfInterest: String ->
+                    navController.navigate("visitorInfoScreen/${personOfInterest}")
+                }
             )
         }
         composable(
-            "visitorPhotoScreen/{firstName}/{lastName}/{email}/{company}/{phoneNumber}",
+            "visitorInfoScreen/{personOfInterest}",
+            arguments = listOf(
+                navArgument("personOfInterest") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val personOfInterest = backStackEntry.arguments?.getString("personOfInterest")
+            personOfInterest?.let {
+                VisitorInfoScreen(
+                    personOfInterest = it,
+                    navigationBack = { navController.popBackStack() },
+                    navigationToVisitorPhotoScreen = { firstName, lastName, email, company, phoneNumber, personOfInterest ->
+                        navController.navigate("visitorPhotoScreen/$firstName/$lastName/$email/$company/$phoneNumber/${personOfInterest}")
+                    }
+                )
+            } ?: Log.e("NavError", "personOfInterest argument is null")
+        }
+
+        composable(
+            "visitorPhotoScreen/{firstName}/{lastName}/{email}/{company}/{phoneNumber}/{personOfInterest}",
             arguments = listOf(
                 navArgument("firstName") { type = NavType.StringType },
                 navArgument("lastName") { type = NavType.StringType },
                 navArgument("email") { type = NavType.StringType },
                 navArgument("company") { type = NavType.StringType },
-                navArgument("phoneNumber") { type = NavType.StringType }
+                navArgument("phoneNumber") { type = NavType.StringType },
+                navArgument("personOfInterest") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val firstName = backStackEntry.arguments?.getString("firstName")
-            val lastName = backStackEntry.arguments?.getString("lastName")
-            val email = backStackEntry.arguments?.getString("email")
-            val company = backStackEntry.arguments?.getString("company")
-            val phoneNumber = backStackEntry.arguments?.getString("phoneNumber")
+            backStackEntry.arguments?.let { args ->
+                val firstName = args.getString("firstName")
+                val lastName = args.getString("lastName")
+                val email = args.getString("email")
+                val company = args.getString("company")
+                val phoneNumber = args.getString("phoneNumber")
+                val personOfInterest = args.getString("personOfInterest")
 
-            // If all the values are non-null, then proceed to show VisitorPhotoScreen
-            listOf(firstName, lastName, email, company, phoneNumber).let { params ->
-                if (params.all { it != null }) {
+                if (listOf(
+                        firstName,
+                        lastName,
+                        email,
+                        company,
+                        phoneNumber,
+                        personOfInterest
+                    ).all { it != null }
+                ) {
                     VisitorPhotoScreen(
                         firstName = firstName!!,
                         lastName = lastName!!,
                         email = email!!,
                         company = company!!,
                         phoneNumber = phoneNumber!!,
+                        personOfInterest = personOfInterest!!,
                         navigationBack = { navController.popBackStack() },
                         navigationToCheckInEndScreen = { navController.navigate("checkInEndScreen") }
                     )
                 } else {
-                    // Handle error case if necessary, for example by showing an error message
-                    Log.e("NavError", "Some arguments were null: $params")
+                    Log.e("NavError", "Some arguments were null")
                 }
             }
         }
 
         composable("checkInEndScreen") {
             CheckInEndScreen(
-                navigationToHomeScreen = { navController.navigate("homeScreen")}
+                navigationToHomeScreen = { navController.navigate("homeScreen") }
+            )
+        }
+
+        composable("listCheckedInScreen") {
+            ListCheckedInScreen(
+                navigationBack = { navController.popBackStack() },
+                navigationToCheckOutEndScreen = { navController.navigate("checkOutEndScreen") }
+            )
+        }
+
+        composable("checkOutEndScreen"){
+            CheckOutEndScreen(
+                navigationToHomeScreen = { navController.navigate("homeScreen") }
             )
         }
 
         composable("threeOptionDeliveryScreen") {
             ThreeOptionDeliveryScreen(
                 navigationBack = { navController.popBackStack() },
-                navigationToDeliveryEndScreen = { navController.navigate("deliveryEndScreen")}
+                navigationToDeliveryEndScreen = { navController.navigate("deliveryEndScreen") }
             )
         }
 
         composable("deliveryEndScreen") {
             DeliveryEndScreen(
-                navigationToHomeScreen = { navController.navigate("homeScreen")}
+                navigationToHomeScreen = { navController.navigate("homeScreen") }
             )
         }
     }
 }
+

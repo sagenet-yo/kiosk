@@ -9,7 +9,9 @@ data class VisitorSearchResponse(
     val firstName: String,
     val lastName: String,
     val checkedIn: Boolean,
-    val picture: ByteArray
+    val picture: ByteArray,
+    val personOfInterest: UUID,
+    val checkInTime : String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -21,7 +23,10 @@ data class VisitorSearchResponse(
         if (firstName != other.firstName) return false
         if (lastName != other.lastName) return false
         if (checkedIn != other.checkedIn) return false
+        if (personOfInterest != other.personOfInterest) return false
+        if (checkInTime != other.checkInTime) return false
         return picture.contentEquals(other.picture)
+
     }
 
     override fun hashCode(): Int {
@@ -29,7 +34,9 @@ data class VisitorSearchResponse(
         result = 31 * result + firstName.hashCode()
         result = 31 * result + lastName.hashCode()
         result = 31 * result + checkedIn.hashCode()
+        result = 31 * result + personOfInterest.hashCode()
         result = 31 * result + picture.contentHashCode()
+        result = 31 * result + checkInTime.hashCode()
         return result
     }
 }

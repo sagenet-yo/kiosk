@@ -1,5 +1,7 @@
 package com.example.kiosk.ApiService
 
+import com.example.kiosk.Dto.CheckInDto
+import com.example.kiosk.Dto.EmailRequest
 import com.example.kiosk.Dto.EmployeeDto
 import com.example.kiosk.Dto.EmployeeSearchResponse
 import com.example.kiosk.Entities.Employee
@@ -15,7 +17,7 @@ import java.util.UUID
 interface EmployeeApiService {
 
     @POST("api/v1/employees/create")
-    fun createEmployee(@Body dto: EmployeeDto): Call<EmployeeDto>
+    fun create(@Body dto: EmployeeDto): Call<EmployeeDto>
 
     @GET("api/v1/employees/{searchTerm}/search")
     fun searchEmployee(@Path("searchTerm") searchTerm: String): Call<List<EmployeeSearchResponse>>
@@ -28,7 +30,4 @@ interface EmployeeApiService {
 
     @DELETE("api/v1/employees/{uuid}/delete")
     fun deleteEmployee(@Path("uuid") uuid: UUID): Call<EmployeeDto>
-
-    @POST("api/v1/employees/{uuid}/email")
-    fun emailEmployee(@Path("uuid") uuid: UUID, @Body message: String): Call<EmployeeDto>
 }

@@ -1,0 +1,68 @@
+<!-- res/layout/label_layout.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Company Logo -->
+    <ImageView
+        android:id="@+id/company_logo"
+        android:layout_width="80dp"
+        android:layout_height="20dp"
+        android:src="@drawable/sagenet_color_logo" />
+
+    <!-- Visitor Name -->
+    <TextView
+        android:id="@+id/visitor_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:textSize="18sp"
+        android:text="Visitor Name"
+        android:textStyle="bold" />
+
+    <!-- Visitor's Company -->
+    <TextView
+        android:id="@+id/visitor_company"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:text="From: Company"
+        android:textSize="14sp" />
+
+    <!-- Visitor Photo -->
+    <ImageView
+        android:id="@+id/visitor_photo"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="8dp"
+        android:scaleType="centerCrop" />
+
+    <!-- Visiting Information -->
+    <TextView
+        android:id="@+id/visiting_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:text="Visiting: Employee Name"
+        android:textSize="14sp" />
+
+    <!-- Issued Date and Validity -->
+    <TextView
+        android:id="@+id/issued_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:text="Issued On: Issued Date"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/valid_until"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="4dp"
+        android:text="Valid Until: Next Day"
+        android:textSize="12sp" />
+</LinearLayout>

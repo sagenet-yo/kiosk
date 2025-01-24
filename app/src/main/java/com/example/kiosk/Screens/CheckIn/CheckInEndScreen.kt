@@ -1,5 +1,10 @@
 package com.example.kiosk.Screens.CheckIn
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
@@ -21,23 +28,40 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.kiosk.Dto.VisitorDto
 import com.example.kiosk.R
+import com.example.kiosk.RetrofitClient.visitorApi
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.util.Base64
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CheckInEndScreen(navigationToHomeScreen: ()->Unit){
-    Column {
+
+    Column(){
         Row (
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)) {
+            modifier = Modifier
+                .padding(16.dp)) {
 
             Spacer(modifier = Modifier.weight(1.0f))
 
@@ -48,6 +72,15 @@ fun CheckInEndScreen(navigationToHomeScreen: ()->Unit){
                     .size(100.dp),
                 alignment = Alignment.Center
             )
+
+//            imageBitmap?.let {
+//                Image(
+//                    bitmap = it.asImageBitmap(),
+//                    contentDescription = "",
+//                    modifier = Modifier.size(100.dp),
+//                    alignment = Alignment.Center
+//                )
+//            }
 
             Spacer(modifier = Modifier.weight(0.75f))
 
@@ -102,3 +135,4 @@ fun CheckInEndScreen(navigationToHomeScreen: ()->Unit){
         }
     }
 }
+

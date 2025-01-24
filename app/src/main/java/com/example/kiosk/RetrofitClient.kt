@@ -1,6 +1,6 @@
 package com.example.kiosk
 
-import com.example.kiosk.ApiService.AdminApiService
+import com.example.kiosk.ApiService.DeviceApiService
 import com.example.kiosk.ApiService.EmployeeApiService
 import com.example.kiosk.ApiService.VisitorApiService
 import okhttp3.OkHttpClient
@@ -9,7 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.253.40.118:8080"
+    private const val BASE_URL = "http://10.253.34.9:8080"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -28,5 +28,5 @@ object RetrofitClient {
     // Create instances of each API service
     val visitorApi: VisitorApiService = retrofit.create(VisitorApiService::class.java)
     val employeeApi: EmployeeApiService = retrofit.create(EmployeeApiService::class.java)
-    val adminApi: AdminApiService = retrofit.create(AdminApiService::class.java)
+    val deviceApi: DeviceApiService = retrofit.create(DeviceApiService::class.java)
 }

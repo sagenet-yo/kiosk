@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.kiosk.R
 
 @Composable
-fun CheckOutEndScreen(){
+fun CheckOutEndScreen(navigationToHomeScreen: ()->Unit){
     Column {
         Row (
             verticalAlignment = Alignment.Top,
@@ -52,7 +52,7 @@ fun CheckOutEndScreen(){
             Spacer(modifier = Modifier.weight(0.75f))
 
             Button(
-                onClick = {},
+                onClick = {navigationToHomeScreen()},
 
                 colors = ButtonDefaults.buttonColors(
                     contentColor = Color.White,

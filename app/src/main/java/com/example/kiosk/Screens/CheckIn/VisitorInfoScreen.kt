@@ -31,17 +31,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.example.kiosk.R
 import com.example.kiosk.RepeatButtons.ExitButton
+import java.util.UUID
 
 
 @Composable
-fun VisitorInfoScreen(navigationBack: ()->Unit, navigationToVisitorPhotoScreen: ()->Unit) {
+fun VisitorInfoScreen(navigationBack: () -> Unit, navigationToVisitorPhotoScreen: (String, String, String, String, String, String) -> Unit, personOfInterest: String) {
     var firstName by remember { mutableStateOf("Donald") }
     var lastName by remember { mutableStateOf("Trump") }
     var email by remember { mutableStateOf("donald.trump.com") }
     var company by remember { mutableStateOf("Trumpy") }
     var phoneNumber by remember { mutableStateOf("7777777777") }
 
-    ExitButton(){navigationBack()}
+    ExitButton { navigationBack() }
 
     Column(
         modifier = Modifier
@@ -113,12 +114,12 @@ fun VisitorInfoScreen(navigationBack: ()->Unit, navigationToVisitorPhotoScreen: 
 
         Button(
             onClick = {
-                navigationToVisitorPhotoScreen()
+                navigationToVisitorPhotoScreen(firstName, lastName, email, company, phoneNumber, personOfInterest)
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color.White,
-                containerColor = Color.DarkGray// Custom text color
+                containerColor = Color.DarkGray // Custom text color
             )
         ) {
             Text("Submit")

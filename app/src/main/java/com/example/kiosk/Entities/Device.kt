@@ -2,10 +2,10 @@ package com.example.kiosk.Entities
 
 import java.util.UUID
 
-data class Admin(
+data class Device (
     val id: UUID,
-    val firstName: String,
-    val lastName: String,
+    val location: String,
     val username: String,
-    val password: String
+    val password: String,
+    val deliveryEmail: String
 )
