@@ -39,7 +39,7 @@ import com.example.kiosk.RepeatButtons.ExitButton
 import java.util.UUID
 
 @Composable
-fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBack: ()->Unit, navigationToVisitorInfoScreen: (String)->Unit) {
+fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBack: ()->Unit, navigationToVisitorInfoScreen: (String, String)->Unit) {
     val employees by viewModel.employees.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -48,9 +48,10 @@ fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBac
 
     ExitButton { navigationBack() }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         Arrangement.Top,
         Alignment.CenterHorizontally
     ) {
@@ -61,7 +62,11 @@ fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBac
             modifier = Modifier.size(100.dp)
         )
 
-        Text("Please select the person you are here to meet.", color = Color.Black, fontSize = 20.sp)
+        Text(
+            "Please select the person you are here to meet.",
+            color = Color.Black,
+            fontSize = 20.sp
+        )
 
         Spacer(modifier = Modifier.padding(16.dp))
 
@@ -78,7 +83,9 @@ fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBac
         if (employees.isEmpty()) {
             Text("No employees found", style = MaterialTheme.typography.bodyLarge)
         } else {
-            EmployeeList(employees = employees) { navigationToVisitorInfoScreen(it) }
+            EmployeeList(employees = employees) { personOfInterest, personOfInterestEmail ->
+                navigationToVisitorInfoScreen(personOfInterest, personOfInterestEmail)
+            }
         }
     }
 }
@@ -94,24 +101,31 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
 }
 
 @Composable
-fun EmployeeList(employees: List<Employee>, navigationToVisitorInfoScreen: (String)->Unit) {
+fun EmployeeList(employees: List<Employee>, navigationToVisitorInfoScreen: (String, String) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
         contentPadding = PaddingValues(32.dp),
         modifier = Modifier.padding(8.dp)
     ) {
         items(employees) { employee ->
-            EmployeeItem(employee = employee, navigationToVisitorInfoScreen = {navigationToVisitorInfoScreen(it)})
+            EmployeeItem(
+                employee = employee,
+                navigationToVisitorInfoScreen = { personOfInterest, personOfInterestEmail ->
+                    navigationToVisitorInfoScreen(personOfInterest, personOfInterestEmail)
+                }
+            )
         }
     }
 }
 
+
 @Composable
-fun EmployeeItem(employee: Employee, navigationToVisitorInfoScreen: (String)->Unit) {
+fun EmployeeItem(employee: Employee, navigationToVisitorInfoScreen: (String, String)->Unit) {
     Button(
         onClick = {
-            val personOfInterest = employee.email
-            navigationToVisitorInfoScreen(personOfInterest)
+            val personOfInterest = employee.firstName + " " + employee.lastName
+            val personOfInterestEmail = employee.email
+            navigationToVisitorInfoScreen(personOfInterest, personOfInterestEmail)
         },
         colors = ButtonDefaults.buttonColors(
             contentColor = Color.Black,

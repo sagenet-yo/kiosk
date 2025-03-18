@@ -5,6 +5,9 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -51,6 +54,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.brother.ptouch.sdk.Printer
+import com.brother.ptouch.sdk.PrinterInfo
+import com.brother.sdk.lmprinter.Channel
+import com.brother.sdk.lmprinter.OpenChannelError
+import com.brother.sdk.lmprinter.PrintError
+import com.brother.sdk.lmprinter.PrinterDriverGenerator
+import com.brother.sdk.lmprinter.PrinterModel
+import com.brother.sdk.lmprinter.setting.PrintImageSettings
+import com.brother.sdk.lmprinter.setting.PrintSettings
+import com.brother.sdk.lmprinter.setting.QLPrintSettings
 import com.example.kiosk.Dto.CheckInDto
 import com.example.kiosk.Dto.VisitorDto
 import com.example.kiosk.R
@@ -59,14 +72,22 @@ import com.example.kiosk.RetrofitClient.visitorApi
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Base64
+
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -81,7 +102,8 @@ fun VisitorPhotoScreen(
     email: String,
     company: String,
     phoneNumber: String,
-    personOfInterest: String
+    personOfInterest: String,
+    personOfInterestEmail: String
 ) {
     var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var visitorDto by remember { mutableStateOf<VisitorDto?>(null) }
@@ -90,11 +112,12 @@ fun VisitorPhotoScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    val sharedPreferences = context.getSharedPreferences("Kiosk", MODE_PRIVATE)
-    val location = sharedPreferences.getString("location", "Default Value") ?: ""
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+    val location: String = sharedPreferences.getString("location", "none") ?: "none"
 
     var previewView: PreviewView? = remember { PreviewView(context) }
     val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
+
 
     LaunchedEffect(cameraPermissionState.status) {
         if (!cameraPermissionState.status.isGranted) {
@@ -174,7 +197,7 @@ fun VisitorPhotoScreen(
                                 checkOutTime = ""
                             )
 
-                            val checkInDto = CheckInDto(visitorDto!!.personOfInterest, location, visitorDto!!)
+                            val checkInDto = CheckInDto(personOfInterestEmail, location, visitorDto!!)
 
                             visitorApi.checkInEmail(checkInDto)
                                 .enqueue(object : Callback<String> {
@@ -187,24 +210,12 @@ fun VisitorPhotoScreen(
                                     }
 
                                     override fun onFailure(call: Call<String>, t: Throwable) {
-                                        Log.e("VisitorPhotoScreen", "API call failed", t)
+                                        Log.e("Failure", "API call failed", t)
                                     }
                                 })
 
-                            visitorApi.printLabel(visitorDto!!)
-                                .enqueue(object : Callback<String> {
-                                    override fun onResponse(call: Call<String>, response: Response<String>) {
-                                        if (response.isSuccessful) {
-                                            Log.i("API_SUCCESS", "Label printed successfully")
-                                        } else {
-                                            Log.e("API_ERROR", "Error: ${response.errorBody()?.string()}")
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<String>, t: Throwable) {
-                                        Log.e("VisitorPhotoScreen", "API call failed", t)
-                                    }
-                                })
+                            val bitmap = createLabel(visitorDto!!, imageBitmap, context)
+                            printLabelOverWiFi(bitmap, "10.253.34.8", context)
 
                             isNavigating = true
                         }) {
@@ -255,6 +266,118 @@ fun VisitorPhotoScreen(
         }
     )
 }
+
+fun printLabelOverWiFi(bitmap: Bitmap, printerIp: String, context: Context) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val channel: Channel = Channel.newWifiChannel(printerIp)
+        val result = PrinterDriverGenerator.openChannel(channel)
+
+        if (result.error.code != OpenChannelError.ErrorCode.NoError) {
+            Log.e("BrotherPrinter", "Error - Open Channel: ${result.error.code}, Message: ${result.error.code}")
+            return@launch
+        }
+
+        Log.d("BrotherPrinter", "Success - Open Channel")
+        val printerDriver = result.driver
+
+        // Configure printer settings using QLPrintSettings
+        val printSettings = QLPrintSettings(PrinterModel.QL_810W).apply {
+            // Set the necessary properties for your print settings here
+            labelSize = QLPrintSettings.LabelSize.RollW62
+            isAutoCut = true
+            workPath = context.filesDir.absolutePath // Set the work path
+            printOrientation = PrintImageSettings.Orientation.Landscape
+            resolution = PrintImageSettings.Resolution.High
+            halftone = PrintImageSettings.Halftone.PatternDither
+            halftoneThreshold = 10
+        }
+
+        try {
+            val printResult = printerDriver.printImage(bitmap, printSettings)
+            if (printResult.code != PrintError.ErrorCode.NoError) {
+                Log.e("BrotherPrinter", "Print failed with error code: ${printResult.errorDescription}")
+            } else {
+                Log.d("BrotherPrinter", "Print successful!")
+            }
+        } finally {
+            printerDriver.closeChannel()
+        }
+    }
+}
+
+
+
+
+fun createLabel(visitorDto: VisitorDto, visitorPhoto: Bitmap?, context: Context): Bitmap {
+    val labelWidth = 800
+    val labelHeight = 500
+
+    val labelBitmap = Bitmap.createBitmap(labelWidth, labelHeight, Bitmap.Config.RGB_565)
+    val canvas = Canvas(labelBitmap)
+
+    val paint = Paint().apply {
+        color = android.graphics.Color.BLACK // Make sure this is from android.graphics
+        textSize = 40f
+        typeface = Typeface.DEFAULT
+        isAntiAlias = true
+    }
+
+    canvas.drawColor(android.graphics.Color.WHITE) // Correct color usage
+
+    // Decode the Sagenet logo from resources\
+    val sagenetLogo = BitmapFactory.decodeResource(context.resources, R.drawable.sagenet_color_logo)
+    val contrastPaint = Paint().apply {
+        isAntiAlias = true
+        isFilterBitmap = true
+        isDither = true
+        color = android.graphics.Color.LTGRAY
+        colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply {
+            set(floatArrayOf(
+                1.2f, 0f, 0f, 0f, -20f,
+                0f, 1.2f, 0f, 0f, -20f,
+                0f, 0f, 1.2f, 0f, -20f,
+                0f, 0f, 0f, 1f, 0f
+            ))
+        })
+    }
+    val scaledLogo = Bitmap.createScaledBitmap(sagenetLogo, 150, 50, true)
+    canvas.drawBitmap(scaledLogo, 10f, 10f, contrastPaint)
+
+    paint.textSize = 30f
+    canvas.drawText("Visitor", 500f, 50f, paint)
+
+    paint.textSize = 50f
+    canvas.drawText("${visitorDto.firstName} ${visitorDto.lastName}", 350f, 200f, paint)
+
+    paint.textSize = 30f
+    canvas.drawText("From: ${visitorDto.company}", 350f, 300f, paint)
+
+    canvas.drawText("Issued On: ${visitorDto.checkInTime}", 100f, 450f, paint)
+
+    visitorPhoto?.let {
+        val contrastPaint = Paint().apply {
+            isAntiAlias = true
+            isFilterBitmap = true
+            isDither = true
+            color = android.graphics.Color.LTGRAY
+            colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply {
+                set(floatArrayOf(
+                    1.2f, 0f, 0f, 0f, -20f,
+                    0f, 1.2f, 0f, 0f, -20f,
+                    0f, 0f, 1.2f, 0f, -20f,
+                    0f, 0f, 0f, 1f, 0f
+                ))
+            })
+        }
+        val scaledPhoto = Bitmap.createScaledBitmap(it, 300, 300, true)
+        canvas.drawBitmap(scaledPhoto, 10f, 100f, contrastPaint)
+    }
+
+    return labelBitmap
+}
+
+
+
 
 @Composable
 fun VisitorUploadScreen(visitorDto: VisitorDto, onSuccess: () -> Unit) {
@@ -347,7 +470,7 @@ private fun captureImage(
             override fun onCaptureSuccess(image: ImageProxy) {
                 val bitmap = image.toBitmap()
                 val croppedBitmap = cropToSquare(bitmap)
-                val compressedBitmap = compressBitmap(croppedBitmap, 5) // Compress to 5% quality
+                val compressedBitmap = compressBitmap(croppedBitmap, 10) // Compress to 10% quality
                 onImageCaptured(compressedBitmap, null)
                 image.close()
             }

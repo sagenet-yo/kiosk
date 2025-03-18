@@ -64,7 +64,7 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         Button(
             onClick = {
                 if (email != null) {
-                    val emailRequest = EmailRequest("Package Requires Signature at $location lobby", "Someone requires a signature for a delivery at the $location lobby near the check-in kiosk.")
+                    val emailRequest = EmailRequest("Package Requires Signature at $location Office Lobby", "Someone requires a signature for a delivery at the $location office lobby near the check-in kiosk.")
                     deviceApiService.deliveryEmail(email, emailRequest)
                         .enqueue(object : Callback<String> {
                             override fun onResponse(call: Call<String>, response: Response<String>) {
@@ -113,7 +113,7 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         Button(
             onClick = {
                 if (email != null) {
-                    val emailRequest = EmailRequest("Package Delivered to $location lobby", "A package has been left in the $location lobby near the check-in kiosk.")
+                    val emailRequest = EmailRequest("Package Delivered to $location Office Lobby", "A package has been left in the $location office lobby near the check-in kiosk.")
                     deviceApiService.deliveryEmail(email, emailRequest)
                         .enqueue(object : Callback<String> {
                             override fun onResponse(call: Call<String>, response: Response<String>) {
@@ -162,7 +162,7 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         Button(
             onClick = {
                 if (email != null) {
-                    val emailRequest = EmailRequest("Package Will be Redelivered to $location Lobby", "A package will be redelivered to $location lobby")
+                    val emailRequest = EmailRequest("Package Will be Redelivered to $location Office Lobby", "A package will be redelivered to $location office lobby")
                     deviceApiService.deliveryEmail(email, emailRequest)
                         .enqueue(object : Callback<String> {
                             override fun onResponse(call: Call<String>, response: Response<String>) {

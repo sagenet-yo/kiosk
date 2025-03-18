@@ -31,9 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.kiosk.Dto.VisitorDto
 import com.example.kiosk.RepeatButtons.ExitButton
@@ -42,7 +44,7 @@ import com.example.kiosk.ViewModels.VisitorViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.Base64
+import android.util.Base64
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -91,8 +93,6 @@ fun VisitorList(visitors: List<VisitorDto>, navigationBack: () -> Unit, navigati
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VisitorItem(visitor: VisitorDto, navigationToCheckOutEndScreen: () -> Unit) {
-    var imageBitmap by remember { mutableStateOf<Bitmap?>(null) }
-
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -118,8 +118,9 @@ fun VisitorItem(visitor: VisitorDto, navigationToCheckOutEndScreen: () -> Unit) 
         }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            val byteArray = decodePictureString(visitor.picture)
-            imageBitmap = byteArrayToBitmap(byteArray)
+            val imageBitmap = remember(visitor.picture) {
+                byteArrayToBitmap(Base64.decode(visitor.picture, Base64.DEFAULT))
+            }
 
             imageBitmap?.let {
                 Image(
@@ -127,9 +128,8 @@ fun VisitorItem(visitor: VisitorDto, navigationToCheckOutEndScreen: () -> Unit) 
                     contentDescription = "",
                     modifier = Modifier.size(64.dp),
                     alignment = Alignment.Center,
+                    contentScale = ContentScale.Crop
                 )
-            } ?: run {
-                Log.e("VisitorItem", "Image bitmap is null or invalid base64 string")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -138,18 +138,11 @@ fun VisitorItem(visitor: VisitorDto, navigationToCheckOutEndScreen: () -> Unit) 
                 fontSize = 20.sp,
                 style = MaterialTheme.typography.bodyLarge
             )
-            Text(text = "Email: ${visitor.email}", fontSize = 14.sp)
-            Text(text = "Company: ${visitor.company}", fontSize = 14.sp)
-            Text(text = "Phone: ${visitor.phoneNumber}", fontSize = 14.sp)
+            Text(text = "Visiting ${visitor.personOfInterest}", fontSize = 14.sp)
         }
     }
 }
 
 fun byteArrayToBitmap(byteArray: ByteArray): Bitmap? {
     return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun decodePictureString(pictureString: String?): ByteArray {
-    return Base64.getDecoder().decode(pictureString)
 }

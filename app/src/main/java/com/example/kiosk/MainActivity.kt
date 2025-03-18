@@ -82,38 +82,42 @@ fun Kiosk() {
         composable("employeeListScreen") {
             EmployeeListScreen(
                 navigationBack = { navController.popBackStack() },
-                navigationToVisitorInfoScreen = { personOfInterest: String ->
-                    navController.navigate("visitorInfoScreen/${personOfInterest}")
+                navigationToVisitorInfoScreen = { personOfInterest: String, personOfInterestEmail: String ->
+                    navController.navigate("visitorInfoScreen/${personOfInterest}/${personOfInterestEmail}")
                 }
             )
         }
         composable(
-            "visitorInfoScreen/{personOfInterest}",
+            "visitorInfoScreen/{personOfInterest}/{personOfInterestEmail}",
             arguments = listOf(
-                navArgument("personOfInterest") { type = NavType.StringType }
+                navArgument("personOfInterest") { type = NavType.StringType },
+                navArgument("personOfInterestEmail") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val personOfInterest = backStackEntry.arguments?.getString("personOfInterest")
+            val personOfInterestEmail = backStackEntry.arguments?.getString("personOfInterestEmail")
             personOfInterest?.let {
                 VisitorInfoScreen(
                     personOfInterest = it,
+                    personOfInterestEmail = personOfInterestEmail!!,
                     navigationBack = { navController.popBackStack() },
-                    navigationToVisitorPhotoScreen = { firstName, lastName, email, company, phoneNumber, personOfInterest ->
-                        navController.navigate("visitorPhotoScreen/$firstName/$lastName/$email/$company/$phoneNumber/${personOfInterest}")
+                    navigationToVisitorPhotoScreen = { firstName, lastName, email, company, phoneNumber, personOfInterest, personOfInterestEmail ->
+                        navController.navigate("visitorPhotoScreen/$firstName/$lastName/$email/$company/$phoneNumber/${personOfInterest}/${personOfInterestEmail}")
                     }
                 )
             } ?: Log.e("NavError", "personOfInterest argument is null")
         }
 
         composable(
-            "visitorPhotoScreen/{firstName}/{lastName}/{email}/{company}/{phoneNumber}/{personOfInterest}",
+            "visitorPhotoScreen/{firstName}/{lastName}/{email}/{company}/{phoneNumber}/{personOfInterest}/{personOfInterestEmail}",
             arguments = listOf(
                 navArgument("firstName") { type = NavType.StringType },
                 navArgument("lastName") { type = NavType.StringType },
                 navArgument("email") { type = NavType.StringType },
                 navArgument("company") { type = NavType.StringType },
                 navArgument("phoneNumber") { type = NavType.StringType },
-                navArgument("personOfInterest") { type = NavType.StringType }
+                navArgument("personOfInterest") { type = NavType.StringType },
+                navArgument("personOfInterestEmail") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             backStackEntry.arguments?.let { args ->
@@ -123,6 +127,7 @@ fun Kiosk() {
                 val company = args.getString("company")
                 val phoneNumber = args.getString("phoneNumber")
                 val personOfInterest = args.getString("personOfInterest")
+                val personOfInterestEmail = args.getString("personOfInterestEmail")
 
                 if (listOf(
                         firstName,
@@ -130,7 +135,8 @@ fun Kiosk() {
                         email,
                         company,
                         phoneNumber,
-                        personOfInterest
+                        personOfInterest,
+                        personOfInterestEmail
                     ).all { it != null }
                 ) {
                     VisitorPhotoScreen(
@@ -140,6 +146,7 @@ fun Kiosk() {
                         company = company!!,
                         phoneNumber = phoneNumber!!,
                         personOfInterest = personOfInterest!!,
+                        personOfInterestEmail = personOfInterestEmail!!,
                         navigationBack = { navController.popBackStack() },
                         navigationToCheckInEndScreen = { navController.navigate("checkInEndScreen") }
                     )

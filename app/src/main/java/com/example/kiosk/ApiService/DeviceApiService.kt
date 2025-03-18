@@ -16,6 +16,6 @@ interface DeviceApiService {
     @POST("/api/v1/devices/authenticate")
     fun authenticate(@Body loginRequest: LoginRequest): Boolean
 
-    @POST("/api/v1/devices/{email}/deliveryEmail")
+    @POST("api/v1/devices/{email}/deliveryEmail")
     fun deliveryEmail(@Path("email") email: String, @Body emailRequest : EmailRequest): Call<String>
 }

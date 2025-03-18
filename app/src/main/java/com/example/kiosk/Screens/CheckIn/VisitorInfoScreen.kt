@@ -35,12 +35,12 @@ import java.util.UUID
 
 
 @Composable
-fun VisitorInfoScreen(navigationBack: () -> Unit, navigationToVisitorPhotoScreen: (String, String, String, String, String, String) -> Unit, personOfInterest: String) {
-    var firstName by remember { mutableStateOf("Donald") }
-    var lastName by remember { mutableStateOf("Trump") }
-    var email by remember { mutableStateOf("donald.trump.com") }
-    var company by remember { mutableStateOf("Trumpy") }
-    var phoneNumber by remember { mutableStateOf("7777777777") }
+fun VisitorInfoScreen(navigationBack: () -> Unit, navigationToVisitorPhotoScreen: (String, String, String, String, String, String, String) -> Unit, personOfInterest: String, personOfInterestEmail: String) {
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var company by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
 
     ExitButton { navigationBack() }
 
@@ -114,7 +114,7 @@ fun VisitorInfoScreen(navigationBack: () -> Unit, navigationToVisitorPhotoScreen
 
         Button(
             onClick = {
-                navigationToVisitorPhotoScreen(firstName, lastName, email, company, phoneNumber, personOfInterest)
+                navigationToVisitorPhotoScreen(firstName, lastName, email, company, phoneNumber, personOfInterest, personOfInterestEmail)
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(

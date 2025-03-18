@@ -19,10 +19,8 @@ class VisitorViewModel : ViewModel() {
 
     fun fetchVisitors() {
         viewModelScope.launch {
-            getVisitorList { visitorList ->
-                visitorList?.let {
-                    // Filter only checked-in visitors on the client side
-                    val checkedInVisitors = it.filter { visitor -> visitor.checkedIn }
+            getCheckedInVisitorList { visitorList ->
+                visitorList?.let { checkedInVisitors ->
                     _visitors.clear()
                     _visitors.addAll(checkedInVisitors)
                     Log.d("VisitorViewModel", "Checked-in visitors: $checkedInVisitors")
@@ -33,6 +31,24 @@ class VisitorViewModel : ViewModel() {
 
     fun getVisitorList(callback: (List<VisitorDto>?) -> Unit) {
         visitorApi.listAllVisitors().enqueue(object : Callback<List<VisitorDto>> {
+            override fun onResponse(call: Call<List<VisitorDto>>, response: Response<List<VisitorDto>>) {
+                if (response.isSuccessful) {
+                    callback(response.body()) // Pass the entire list to the callback
+                } else {
+                    Log.e("VisitorListApi", "Error fetching visitors: ${response.code()}")
+                    callback(null)
+                }
+            }
+
+            override fun onFailure(call: Call<List<VisitorDto>>, t: Throwable) {
+                Log.e("VisitorListApi1", "API call failed: $t")
+                callback(null)
+            }
+        })
+    }
+
+    fun getCheckedInVisitorList(callback: (List<VisitorDto>?) -> Unit) {
+        visitorApi.listCheckedInVisitors().enqueue(object : Callback<List<VisitorDto>> {
             override fun onResponse(call: Call<List<VisitorDto>>, response: Response<List<VisitorDto>>) {
                 if (response.isSuccessful) {
                     callback(response.body()) // Pass the entire list to the callback

@@ -1,4 +1,4 @@
-package com.example.kiosk.Screens
+ package com.example.kiosk.Screens
 
 import android.app.Activity
 import android.content.Context.MODE_PRIVATE
@@ -47,6 +47,47 @@ fun SetupScreen() {
             modifier = Modifier.size(150.dp)
         )
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         Spacer(modifier = Modifier.height(64.dp))
 
         TextField(
