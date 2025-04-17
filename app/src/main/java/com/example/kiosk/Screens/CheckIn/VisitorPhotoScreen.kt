@@ -114,6 +114,7 @@ fun VisitorPhotoScreen(
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
     val location: String = sharedPreferences.getString("location", "none") ?: "none"
+    val printerIp: String = sharedPreferences.getString("printerIp", "none") ?: "none"
 
     var previewView: PreviewView? = remember { PreviewView(context) }
     val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
@@ -139,7 +140,7 @@ fun VisitorPhotoScreen(
 
     Scaffold(
         content = {
-            ExitButton { navigationBack() }
+            ExitButton(onClick = { navigationBack() })
 
             Column(
                 modifier = Modifier
@@ -194,7 +195,8 @@ fun VisitorPhotoScreen(
                                 picture = pictureString,
                                 personOfInterest = personOfInterest,
                                 checkInTime = LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm a")) + " " + LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy")),
-                                checkOutTime = ""
+                                checkOutTime = "",
+                                location = location
                             )
 
                             val checkInDto = CheckInDto(personOfInterestEmail, location, visitorDto!!)
@@ -215,7 +217,7 @@ fun VisitorPhotoScreen(
                                 })
 
                             val bitmap = createLabel(visitorDto!!, imageBitmap, context)
-                            printLabelOverWiFi(bitmap, "10.253.34.8", context)
+                            printLabelOverWiFi(bitmap, printerIp, context)
 
                             isNavigating = true
                         }) {
@@ -306,8 +308,6 @@ fun printLabelOverWiFi(bitmap: Bitmap, printerIp: String, context: Context) {
 }
 
 
-
-
 fun createLabel(visitorDto: VisitorDto, visitorPhoto: Bitmap?, context: Context): Bitmap {
     val labelWidth = 800
     val labelHeight = 500
@@ -316,32 +316,18 @@ fun createLabel(visitorDto: VisitorDto, visitorPhoto: Bitmap?, context: Context)
     val canvas = Canvas(labelBitmap)
 
     val paint = Paint().apply {
-        color = android.graphics.Color.BLACK // Make sure this is from android.graphics
+        color = android.graphics.Color.BLACK
         textSize = 40f
         typeface = Typeface.DEFAULT
         isAntiAlias = true
     }
 
-    canvas.drawColor(android.graphics.Color.WHITE) // Correct color usage
+    canvas.drawColor(android.graphics.Color.WHITE)
 
-    // Decode the Sagenet logo from resources\
+    // Decode the Sagenet logo from resources
     val sagenetLogo = BitmapFactory.decodeResource(context.resources, R.drawable.sagenet_color_logo)
-    val contrastPaint = Paint().apply {
-        isAntiAlias = true
-        isFilterBitmap = true
-        isDither = true
-        color = android.graphics.Color.LTGRAY
-        colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply {
-            set(floatArrayOf(
-                1.2f, 0f, 0f, 0f, -20f,
-                0f, 1.2f, 0f, 0f, -20f,
-                0f, 0f, 1.2f, 0f, -20f,
-                0f, 0f, 0f, 1f, 0f
-            ))
-        })
-    }
     val scaledLogo = Bitmap.createScaledBitmap(sagenetLogo, 150, 50, true)
-    canvas.drawBitmap(scaledLogo, 10f, 10f, contrastPaint)
+    canvas.drawBitmap(scaledLogo, 10f, 10f, null)
 
     paint.textSize = 30f
     canvas.drawText("Visitor", 500f, 50f, paint)
@@ -351,26 +337,11 @@ fun createLabel(visitorDto: VisitorDto, visitorPhoto: Bitmap?, context: Context)
 
     paint.textSize = 30f
     canvas.drawText("From: ${visitorDto.company}", 350f, 300f, paint)
-
     canvas.drawText("Issued On: ${visitorDto.checkInTime}", 100f, 450f, paint)
 
     visitorPhoto?.let {
-        val contrastPaint = Paint().apply {
-            isAntiAlias = true
-            isFilterBitmap = true
-            isDither = true
-            color = android.graphics.Color.LTGRAY
-            colorFilter = android.graphics.ColorMatrixColorFilter(android.graphics.ColorMatrix().apply {
-                set(floatArrayOf(
-                    1.2f, 0f, 0f, 0f, -20f,
-                    0f, 1.2f, 0f, 0f, -20f,
-                    0f, 0f, 1.2f, 0f, -20f,
-                    0f, 0f, 0f, 1f, 0f
-                ))
-            })
-        }
         val scaledPhoto = Bitmap.createScaledBitmap(it, 300, 300, true)
-        canvas.drawBitmap(scaledPhoto, 10f, 100f, contrastPaint)
+        canvas.drawBitmap(scaledPhoto, 10f, 100f, null)
     }
 
     return labelBitmap

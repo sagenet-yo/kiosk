@@ -1,5 +1,6 @@
 package com.example.kiosk
 
+import AuthInterceptor
 import com.example.kiosk.ApiService.DeviceApiService
 import com.example.kiosk.ApiService.EmployeeApiService
 import com.example.kiosk.ApiService.VisitorApiService
@@ -12,10 +13,13 @@ import javax.net.ssl.*
 
 object RetrofitClient {
     private const val BASE_URL = "https://34.73.139.149/api/"
+    private const val TOKEN = "4381371b-d31e-45ae-956b-7f1ac0dc5a19"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
+
+    private val authInterceptor = AuthInterceptor(TOKEN)
 
     // Create an Unsafe OkHttpClient to ignore SSL certificate errors
     private val unsafeHttpClient: OkHttpClient by lazy {
@@ -40,6 +44,7 @@ object RetrofitClient {
                 .sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
                 .hostnameVerifier { _, _ -> true } // Accept any hostname
                 .addInterceptor(loggingInterceptor)
+                .addInterceptor(authInterceptor) // Add the AuthInterceptor
                 .build()
         } catch (e: Exception) {
             throw RuntimeException(e)

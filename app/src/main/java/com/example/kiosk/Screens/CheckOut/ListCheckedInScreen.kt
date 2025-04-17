@@ -45,6 +45,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.util.Base64
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.TextButton
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,15 +66,18 @@ fun ListCheckedInScreen(navigationBack: () -> Unit,
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VisitorList(visitors: List<VisitorDto>, navigationBack: () -> Unit, navigationToCheckOutEndScreen: () -> Unit) {
-    ExitButton {
-        navigationBack()
-    }
 
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp),
         Arrangement.Bottom,
         Alignment.CenterHorizontally) {
+
+        ExitButton(
+            onClick = { navigationBack() },
+            modifier = Modifier.align(Alignment.Start)
+        )
+
         LazyColumn(modifier = Modifier
             .fillMaxWidth()  // Fill the width
             .height(600.dp) // Adjust height based on content)
@@ -88,34 +93,54 @@ fun VisitorList(visitors: List<VisitorDto>, navigationBack: () -> Unit, navigati
     }
 }
 
-
 @OptIn(ExperimentalMaterialApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VisitorItem(visitor: VisitorDto, navigationToCheckOutEndScreen: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Confirm Checkout") },
+            text = { Text("Are you sure you want to check out ${visitor.firstName} ${visitor.lastName}?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    visitor.id?.let { id ->
+                        RetrofitClient.visitorApi.checkOutVisitor(id).enqueue(object : Callback<VisitorDto> {
+                            override fun onResponse(call: Call<VisitorDto>, response: Response<VisitorDto>) {
+                                if (response.isSuccessful) {
+                                    Log.d("VisitorItem", "Visitor checked out successfully: ${response.body()}")
+                                    navigationToCheckOutEndScreen()
+                                } else {
+                                    Log.e("VisitorItem", "Error checking out visitor: ${response.code()}")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<VisitorDto>, t: Throwable) {
+                                Log.e("VisitorItem", "API call failed: $t")
+                            }
+                        })
+                    }
+                }) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
         elevation = 4.dp,
-        onClick = {
-            visitor.id?.let { id ->
-                RetrofitClient.visitorApi.checkOutVisitor(id).enqueue(object : Callback<VisitorDto> {
-                    override fun onResponse(call: Call<VisitorDto>, response: Response<VisitorDto>) {
-                        if (response.isSuccessful) {
-                            Log.d("VisitorItem", "Visitor checked out successfully: ${response.body()}")
-                            navigationToCheckOutEndScreen()
-                        } else {
-                            Log.e("VisitorItem", "Error checking out visitor: ${response.code()}")
-                        }
-                    }
-
-                    override fun onFailure(call: Call<VisitorDto>, t: Throwable) {
-                        Log.e("VisitorItem", "API call failed: $t")
-                    }
-                })
-            }
-        }
+        onClick = { showDialog = true }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             val imageBitmap = remember(visitor.picture) {

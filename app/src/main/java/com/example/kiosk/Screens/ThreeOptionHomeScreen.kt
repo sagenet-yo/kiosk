@@ -46,29 +46,31 @@ fun ThreeOptionHomeScreen(
     navigationToThreeOptionCheckOutScreen: () -> Unit,
     navigationToEmployeeListScreen: () -> Unit
 ) {
-
-    ExitButton(navigationBack)
-
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.padding(20.dp))
 
         Image(
             painter = painterResource(id = R.drawable.sagenet_logo),
             contentDescription = "",
-            modifier = Modifier.size(150.dp)
+            modifier = Modifier
+                .width( 900.dp) // Adjust width as needed
+                .padding(16.dp)
+                .height(300.dp) // Adjust height as needed
+
         )
 
+
+
         Text(
-            text = "Please select the reason for your visit.",
+            text = "Welcome, please select the reason for your visit.",
             textAlign = TextAlign.Center,
             fontSize = 25.sp
         )
 
-        Spacer(modifier = Modifier.padding(96.dp))
+        Spacer(modifier = Modifier.padding(12.dp))
 
         val context = LocalContext.current
 

@@ -92,7 +92,7 @@ fun DeliveryEndScreen(navigationToHomeScreen: ()->Unit){
                 fontSize = 96.sp,
                 fontWeight = FontWeight.Bold
             )
-            Text(text = "Someone has been notified about this delivery and will be with you shortly.",
+            Text(text = "Someone has been notified",
                 modifier = Modifier
                     .width(1200.dp),
                 textAlign = TextAlign.Center,

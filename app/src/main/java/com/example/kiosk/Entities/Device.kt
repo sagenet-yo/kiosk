@@ -7,5 +7,6 @@ data class Device (
     val location: String,
     val username: String,
     val password: String,
-    val deliveryEmail: String
+    val deliveryEmail: String,
+    val printerIp: String
 )

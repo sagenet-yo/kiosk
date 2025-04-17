@@ -72,6 +72,7 @@ dependencies {
     implementation ("androidx.compose.material:material:1.7.0")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.7.0")
     implementation(mapOf("name" to "BrotherPrintLibrary", "ext" to "aar"))
+    implementation("org.chromium.net:cronet-embedded:119.6045.31")
     debugImplementation ("androidx.compose.ui:ui-tooling:1.7.0")
 
     // CameraX Core library

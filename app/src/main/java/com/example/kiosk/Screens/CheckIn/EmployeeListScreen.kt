@@ -38,53 +38,70 @@ import com.example.kiosk.R
 import com.example.kiosk.RepeatButtons.ExitButton
 import java.util.UUID
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.zIndex
+
 @Composable
-fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBack: ()->Unit, navigationToVisitorInfoScreen: (String, String)->Unit) {
+fun EmployeeListScreen(viewModel: EmployeeViewModel = viewModel(), navigationBack: () -> Unit, navigationToVisitorInfoScreen: (String, String) -> Unit) {
     val employees by viewModel.employees.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     // Log the data observed from StateFlow
     Log.d("EmployeeScreen", "Employees observed: $employees")
 
-    ExitButton { navigationBack() }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        Arrangement.Top,
-        Alignment.CenterHorizontally
+            .clickable { focusManager.clearFocus() }
+            .padding(16.dp)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        Image(
-            painter = painterResource(id = R.drawable.sagenet_logo),
-            contentDescription = "",
-            modifier = Modifier.size(100.dp)
-        )
+            ExitButton(
+                onClick = { navigationBack() },
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .zIndex(1f)
+            )
 
-        Text(
-            "Please select the person you are here to meet.",
-            color = Color.Black,
-            fontSize = 20.sp
-        )
+            Image(
+                painter = painterResource(id = R.drawable.sagenet_logo),
+                contentDescription = "",
+                modifier = Modifier.size(100.dp)
+            )
 
-        Spacer(modifier = Modifier.padding(16.dp))
+            Text(
+                "Please select the person you are here to meet.",
+                color = Color.Black,
+                fontSize = 20.sp
+            )
 
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = { query ->
-                searchQuery = query
-                viewModel.searchEmployees(query)
-            }
-        )
+            Spacer(modifier = Modifier.padding(16.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { query ->
+                    searchQuery = query
+                    viewModel.searchEmployees(query)
+                }
+            )
 
-        if (employees.isEmpty()) {
-            Text("No employees found", style = MaterialTheme.typography.bodyLarge)
-        } else {
-            EmployeeList(employees = employees) { personOfInterest, personOfInterestEmail ->
-                navigationToVisitorInfoScreen(personOfInterest, personOfInterestEmail)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (employees.isEmpty()) {
+                Text("No employees found", style = MaterialTheme.typography.bodyLarge)
+            } else {
+                EmployeeList(employees = employees) { personOfInterest, personOfInterestEmail ->
+                    navigationToVisitorInfoScreen(personOfInterest, personOfInterestEmail)
+                }
             }
         }
     }

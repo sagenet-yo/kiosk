@@ -14,7 +14,8 @@ data class Visitor(
     val picture: String,
     val personOfInterest: String,
     val checkInTime : String,
-    val checkOutTime : String
+    val checkOutTime : String,
+    val location : String
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -32,6 +33,7 @@ data class Visitor(
         if (personOfInterest != other.personOfInterest) return false
         if (checkInTime != other.checkInTime) return false
         if (checkOutTime != other.checkOutTime) return false
+        if (location != other.location) return false
         return picture.contentEquals(other.picture)
     }
 
@@ -47,6 +49,7 @@ data class Visitor(
         result = 31 * result + picture.hashCode()
         result = 31 * result + checkInTime.hashCode()
         result = 31 * result + checkOutTime.hashCode()
+        result = 31 * result + location.hashCode()
         return result
     }
 }

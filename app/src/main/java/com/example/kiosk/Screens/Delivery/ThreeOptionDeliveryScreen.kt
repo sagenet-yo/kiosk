@@ -39,8 +39,6 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
     val location = sharedPreferences.getString("location", "none")
     val deviceApiService = RetrofitClient.deviceApi
 
-    ExitButton(navigationBack)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,6 +46,11 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        ExitButton(
+            onClick = { navigationBack() },
+            modifier = Modifier.align(Alignment.Start)
+        )
+
         Image(
             painter = painterResource(id = R.drawable.sagenet_logo),
             contentDescription = "",
