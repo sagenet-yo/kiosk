@@ -51,6 +51,8 @@ android {
 
 dependencies {
 
+
+
     //Label
     //Icons
     implementation ("androidx.compose.material:material-icons-core:1.7.0")
@@ -129,4 +131,6 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    //Memory Leak Detector
+    debugImplementation ("com.squareup.leakcanary:leakcanary-android:2.12")
 }

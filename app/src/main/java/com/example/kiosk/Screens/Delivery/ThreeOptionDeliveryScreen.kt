@@ -67,55 +67,6 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         Button(
             onClick = {
                 if (email != null) {
-                    val emailRequest = EmailRequest("Package Requires Signature at $location Office Lobby", "Someone requires a signature for a delivery at the $location office lobby near the check-in kiosk.")
-                    deviceApiService.deliveryEmail(email, emailRequest)
-                        .enqueue(object : Callback<String> {
-                            override fun onResponse(call: Call<String>, response: Response<String>) {
-                                if (response.isSuccessful) {
-                                    Log.i("API_SUCCESS", "Email sent successfully")
-                                } else {
-                                    Log.e("API_ERROR", "Error: ${response.errorBody()?.string()}")
-                                }
-                            }
-
-                            override fun onFailure(call: Call<String>, t: Throwable) {
-                                Log.e("API_FAILURE", "Failure: ${t.message}")
-                            }
-                        })
-                } else {
-                    Log.e("NULL_CHECK", "Email is null")
-                }
-                navigationToDeliveryEndScreen()
-            },
-            colors = ButtonDefaults.buttonColors(
-                contentColor = Color.Black,
-                containerColor = Color.White,
-            ),
-            shape = RoundedCornerShape(4.dp),
-            border = BorderStroke(0.5.dp, Color.Black),
-            modifier = Modifier
-                .width(1000.dp)
-                .height(100.dp)
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Requires signature",
-                fontWeight = FontWeight.Light
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(
-                imageVector = Icons.Filled.ArrowForwardIos,
-                contentDescription = "",
-                tint = Color.Black,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        Button(
-            onClick = {
-                if (email != null) {
                     val emailRequest = EmailRequest("Package Delivered to $location Office Lobby", "A package has been left in the $location office lobby near the check-in kiosk.")
                     deviceApiService.deliveryEmail(email, emailRequest)
                         .enqueue(object : Callback<String> {
@@ -149,6 +100,55 @@ fun ThreeOptionDeliveryScreen(navigationBack: () -> Unit, navigationToDeliveryEn
         ) {
             Text(
                 text = "Left delivery at the counter",
+                fontWeight = FontWeight.Light
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Filled.ArrowForwardIos,
+                contentDescription = "",
+                tint = Color.Black,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Button(
+            onClick = {
+                if (email != null) {
+                    val emailRequest = EmailRequest("Package Requires Signature at $location Office Lobby", "Someone requires a signature for a delivery at the $location office lobby near the check-in kiosk.")
+                    deviceApiService.deliveryEmail(email, emailRequest)
+                        .enqueue(object : Callback<String> {
+                            override fun onResponse(call: Call<String>, response: Response<String>) {
+                                if (response.isSuccessful) {
+                                    Log.i("API_SUCCESS", "Email sent successfully")
+                                } else {
+                                    Log.e("API_ERROR", "Error: ${response.errorBody()?.string()}")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<String>, t: Throwable) {
+                                Log.e("API_FAILURE", "Failure: ${t.message}")
+                            }
+                        })
+                } else {
+                    Log.e("NULL_CHECK", "Email is null")
+                }
+                navigationToDeliveryEndScreen()
+            },
+            colors = ButtonDefaults.buttonColors(
+                contentColor = Color.Black,
+                containerColor = Color.White,
+            ),
+            shape = RoundedCornerShape(4.dp),
+            border = BorderStroke(0.5.dp, Color.Black),
+            modifier = Modifier
+                .width(1000.dp)
+                .height(100.dp)
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Requires signature",
                 fontWeight = FontWeight.Light
             )
 

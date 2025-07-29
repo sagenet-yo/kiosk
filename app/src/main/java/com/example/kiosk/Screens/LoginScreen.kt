@@ -10,6 +10,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.kiosk.ViewModels.LoginViewModel
 import com.example.kiosk.Dto.LoginRequest
+import com.example.kiosk.InactivityTimer
 
 @Composable
 fun LoginScreen(viewModel: LoginViewModel, onLoginSuccess: () -> Unit) {

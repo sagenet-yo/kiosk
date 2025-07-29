@@ -12,12 +12,18 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,34 +38,35 @@ import com.example.kiosk.Screens.LoginScreen
 import com.example.kiosk.Screens.ThreeOptionHomeScreen
 import com.example.kiosk.ViewModels.LoginViewModel
 import com.example.kiosk.ui.theme.KioskTheme
+import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
+    private lateinit var inactivityTimer: InactivityTimer
 
-    private val inactivityHandler = Handler(Looper.getMainLooper())
-    private val inactivityRunnable = Runnable {
-        val navController = NavControllerHolder.navController
-        if (navController != null) {
-            if (navController?.currentDestination?.route != "threeOptionHomeScreen" && navController.currentDestination?.route != "loginScreen") {
-                navController?.navigate("threeOptionHomeScreen") {
-                    popUpTo(0) { inclusive = false }
-                }
-            }
-        }
-    }
-
-    override fun onUserInteraction() {
-        super.onUserInteraction()
-        resetInactivityTimer()
-    }
-
-    private fun resetInactivityTimer() {
-        inactivityHandler.removeCallbacks(inactivityRunnable)
-        inactivityHandler.postDelayed(inactivityRunnable, 45_000L)
+    companion object {
+        private var instance: MainActivity? = null
+        fun getInstance(): MainActivity? = instance
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        instance = this
+
+        inactivityTimer = InactivityTimer(45_000L, {
+            val navController = NavControllerHolder.navController
+            if (navController != null &&
+                navController.currentDestination?.route != "threeOptionHomeScreen" &&
+                navController.currentDestination?.route != "loginScreen"
+            ) {
+                navController.navigate("threeOptionHomeScreen") {
+                    popUpTo(navController.graph.startDestinationId) { 
+                        inclusive = true 
+                    }
+                    launchSingleTop = true
+                }
+            }
+        }, lifecycle)
 
         setContent {
             KioskTheme {
@@ -67,15 +74,39 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Kiosk()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(Unit) {
+                                detectTapGestures {
+                                    // Only reset timer if user is logged in
+                                    val sharedPrefs = this@MainActivity.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+                                    if (sharedPrefs.getBoolean("hasLoggedIn", false)) {
+                                        inactivityTimer.reset()
+                                    }
+                                }
+                            }
+                    ) {
+                        Kiosk()
+                    }
                 }
             }
         }
 
-        // Start the timer on initial launch
-        resetInactivityTimer()
+        // Don't start timer immediately - let it start after login
+    }
+
+    fun startInactivityTimer() {
+        inactivityTimer.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        instance = null
+        inactivityTimer.cancel()
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -85,13 +116,18 @@ fun Kiosk() {
     val context = LocalContext.current
     val loginViewModel = LoginViewModel(context)
 
-    val sharedPreferences = LocalContext.current.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
+    val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     val hasLoggedIn = sharedPreferences.getBoolean("hasLoggedIn", false)
 
     val startDestination = if (hasLoggedIn) {
         "threeOptionHomeScreen"
     } else {
         "loginScreen"
+    }
+
+    // Start timer if already logged in
+    if (hasLoggedIn) {
+        MainActivity.getInstance()?.startInactivityTimer()
     }
 
     NavHost(navController = navController, startDestination = startDestination) {
@@ -101,6 +137,9 @@ fun Kiosk() {
                 onLoginSuccess = {
                     val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
                     sharedPreferences.edit().putBoolean("hasLoggedIn", true).apply()
+
+                    // Start inactivity timer after successful login
+                    MainActivity.getInstance()?.startInactivityTimer()
 
                     navController.navigate("threeOptionHomeScreen") {
                         popUpTo("loginScreen") { inclusive = true }

@@ -1,5 +1,6 @@
 package com.example.kiosk.Screens.CheckOut
 
+import android.content.Context.MODE_PRIVATE
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
@@ -47,19 +48,27 @@ import retrofit2.Response
 import android.util.Base64
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.TextButton
+import android.content.SharedPreferences
+import androidx.compose.ui.platform.LocalContext
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ListCheckedInScreen(navigationBack: () -> Unit,
                         navigationToCheckOutEndScreen: () -> Unit) {
+    val context = LocalContext.current
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+    val deviceLocation = sharedPreferences.getString("location", "none")
     val viewModel: VisitorViewModel = viewModel()
 
     // Fetch visitors on initial composition
     LaunchedEffect(Unit) {
         viewModel.fetchVisitors()
     }
+    val filteredVisitors = viewModel.visitors.filter { it.location == deviceLocation }
+
     // Display the list of visitors
-    VisitorList(visitors = viewModel.visitors, navigationBack = navigationBack, navigationToCheckOutEndScreen = navigationToCheckOutEndScreen)
+    VisitorList(visitors = filteredVisitors, navigationBack = navigationBack, navigationToCheckOutEndScreen = navigationToCheckOutEndScreen)
 }
 
 
