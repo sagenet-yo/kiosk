@@ -12,7 +12,7 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 object RetrofitClient {
-    private const val BASE_URL = "https://34.73.139.149/api/"
+    private const val BASE_URL = "https://officekiosk.sagenet.com/api/"
     private const val TOKEN = "4381371b-d31e-45ae-956b-7f1ac0dc5a19"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

@@ -112,7 +112,7 @@ fun VisitorPhotoScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("AppPreferences", MODE_PRIVATE)
     val location: String = sharedPreferences.getString("location", "none") ?: "none"
     val printerIp: String = sharedPreferences.getString("printerIp", "none") ?: "none"
 

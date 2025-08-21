@@ -12,7 +12,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface DeviceApiService {
-    @POST("/api/v1/devices/create")
+    @POST("api/v1/devices/create")
     fun create(@Body dto: DeviceDto): Call<DeviceDto>
 
     @POST("api/v1/devices/authenticate")
@@ -22,6 +22,6 @@ interface DeviceApiService {
     @POST("api/v1/devices/{email}/deliveryEmail")
     fun deliveryEmail(@Path("email") email: String, @Body emailRequest : EmailRequest): Call<String>
 
-    @GET("/api/v1/devices/findByUsername/{username}")
+    @GET("api/v1/devices/findByUsername/{username}")
     fun findByUsername(@Path("username") username: String): Call<DeviceDto>
 }

@@ -29,6 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.kiosk.Dto.DeviceDto
 import com.example.kiosk.Screens.CheckIn.CheckInEndScreen
 import com.example.kiosk.Screens.CheckIn.VisitorInfoScreen
 import com.example.kiosk.Screens.CheckOut.CheckOutEndScreen
@@ -39,6 +40,9 @@ import com.example.kiosk.Screens.ThreeOptionHomeScreen
 import com.example.kiosk.ViewModels.LoginViewModel
 import com.example.kiosk.ui.theme.KioskTheme
 import kotlinx.coroutines.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : ComponentActivity() {
     private lateinit var inactivityTimer: InactivityTimer
@@ -118,6 +122,7 @@ fun Kiosk() {
 
     val sharedPreferences = context.getSharedPreferences("AppPreferences", Context.MODE_PRIVATE)
     val hasLoggedIn = sharedPreferences.getBoolean("hasLoggedIn", false)
+    val username = sharedPreferences.getString("location", "none") ?: "none"
 
     val startDestination = if (hasLoggedIn) {
         "threeOptionHomeScreen"
@@ -128,6 +133,27 @@ fun Kiosk() {
     // Start timer if already logged in
     if (hasLoggedIn) {
         MainActivity.getInstance()?.startInactivityTimer()
+
+        RetrofitClient.deviceApi.findByUsername(username).enqueue(object : Callback<DeviceDto> {
+            override fun onResponse(call: Call<DeviceDto>, response: Response<DeviceDto>) {
+                if (response.isSuccessful) {
+                    val device = response.body()
+                    if (device != null) {
+                        sharedPreferences.edit().apply {
+                            putString("deliveryEmail", device.deliveryEmail)
+                            putString("printerIp", device.printerIp)
+                            apply()
+                        }
+                        Log.d("SharedPreferences", "Saved Printer IP: ${device.printerIp}")
+                        Log.d("SharedPreferences", "Saved Location: ${device.location}")
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<DeviceDto>, t: Throwable) {
+                Log.e("DeviceApiError", "Failed to fetch device info: ${t.message}")
+            }
+        })
     }
 
     NavHost(navController = navController, startDestination = startDestination) {

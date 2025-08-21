@@ -2,6 +2,7 @@ package com.example.kiosk.ViewModels
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -42,6 +43,11 @@ class LoginViewModel(
                                 if (device != null) {
                                     sharedPreferences.edit().putString("deliveryEmail", device.deliveryEmail).apply()
                                     sharedPreferences.edit().putString("location", device.location).apply()
+                                    sharedPreferences.edit().putString("printerIp", device.printerIp).apply()
+                                    sharedPreferences.edit().putString("username", device.username).apply()
+
+                                    Log.d("SharedPreferences", "Saved Printer IP: ${sharedPreferences.getString("printerIp", "none")}")
+                                    Log.d("SharedPreferences", "Saved Location: ${sharedPreferences.getString("location", "none")}")
                                 }
                             }
                         }
